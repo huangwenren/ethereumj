@@ -7,6 +7,7 @@ import org.ethereum.core.*;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 import org.ethereum.listener.EthereumListenerAdapter;
+import org.ethereum.net.apa.message.RequestMessage;
 import org.ethereum.net.eth.message.*;
 import org.ethereum.net.message.Message;
 import org.ethereum.net.server.Channel;
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Collections;
+import java.util.HashMap;
 
 import static org.ethereum.crypto.HashUtil.sha3;
 
@@ -98,7 +100,10 @@ public class PeerProtocolTest {
         Thread.sleep(10000);
 
         System.out.println("======= Sending test message...");
-        channels[0].getApaHandler().sendRequest("hello");
+        HashMap msg = new HashMap();
+        msg.put("payload", "hello");
+
+        channels[0].getApaHandler().sendRequest(new RequestMessage(msg));
         Thread.sleep(10000);
 
         ethereum1.close();

@@ -2,12 +2,12 @@ package org.ethereum.net.apa.message;
 
 import org.ethereum.net.shh.WhisperMessage;
 import org.ethereum.util.RLP;
-import org.ethereum.util.RLPList;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.*;
 
 import static org.ethereum.net.apa.message.ApaMessageCodes.REQUEST;
 
@@ -17,20 +17,15 @@ import static org.ethereum.net.apa.message.ApaMessageCodes.REQUEST;
  * @description: none
  */
 public class RequestMessage extends ApaMessage {
-    private List<WhisperMessage> messages = new ArrayList<>();
+    private HashMap messages = new HashMap<>();
 
     public RequestMessage(byte[] encoded) {
         super(encoded);
         parse();
     }
 
-    public RequestMessage(WhisperMessage ... msg) {
-        Collections.addAll(messages, msg);
-        parsed = true;
-    }
-
-    public RequestMessage(Collection<WhisperMessage> msg) {
-        messages.addAll(msg);
+    public RequestMessage(HashMap msg) {
+        messages = msg;
         parsed = true;
     }
 
@@ -39,34 +34,43 @@ public class RequestMessage extends ApaMessage {
         return REQUEST;
     }
 
-    public void addMessage(WhisperMessage msg) {
-        messages.add(msg);
-    }
-
     public void parse() {
         if (!parsed) {
-            RLPList paramsList = (RLPList) RLP.decode2(encoded).get(0);
-
-            for (int i = 0; i < paramsList.size(); i++) {
-                messages.add(new WhisperMessage(paramsList.get(i).getRLPData()));
+            try
+            {
+                ByteArrayInputStream byteArrayInStream = new ByteArrayInputStream(encoded);
+                ObjectInputStream objectInStream = new ObjectInputStream(byteArrayInStream);
+                messages = (HashMap)objectInStream.readObject();
+                byteArrayInStream.close();
+                objectInStream.close();
             }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+
             this.parsed = true;
         }
     }
 
     @Override
     public byte[] getEncoded() {
-        if (encoded == null) {
-            byte[][] encodedMessages = new byte[messages.size()][];
-            for (int i = 0; i < encodedMessages.length; i++) {
-                encodedMessages[i] = messages.get(i).getEncoded();
+        if(encoded == null) {
+            try {
+                ByteArrayOutputStream byteArrayOutStream = new ByteArrayOutputStream();
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutStream);
+                objectOutputStream.writeObject(messages);
+                encoded = byteArrayOutStream.toByteArray();
+                byteArrayOutStream.close();
+                objectOutputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            encoded = RLP.encodeList(encodedMessages);
         }
         return encoded;
     }
 
-    public List<WhisperMessage> getMessages() {
+    public HashMap getMessages() {
         return messages;
     }
 

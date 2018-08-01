@@ -48,7 +48,7 @@ public class HelloMessage extends P2pMessage {
     private String clientId;
     /**
      * A peer-network capability code, readable ASCII and 3 letters.
-     * Currently only "eth", "shh" and "bzz" are known.
+     * Currently only "eth", "shh", "bzz" and "apa" are known.
      */
     private List<Capability> capabilities = Collections.emptyList();
     /**

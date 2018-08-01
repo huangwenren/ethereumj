@@ -17,6 +17,7 @@
  */
 package org.ethereum.config;
 
+import org.ethereum.net.apa.handler.ApaHandler;
 import org.ethereum.net.eth.EthVersion;
 import org.ethereum.net.shh.ShhHandler;
 import org.ethereum.net.swarm.bzz.BzzHandler;
@@ -61,6 +62,7 @@ class Initializer implements BeanPostProcessor {
         }
         logger.info("capability shh version: [{}]", ShhHandler.VERSION);
         logger.info("capability bzz version: [{}]", BzzHandler.VERSION);
+        logger.info("capability apa version: [{}]", ApaHandler.VERSION);
 
         // forcing loading blockchain config
         config.getBlockchainConfig();

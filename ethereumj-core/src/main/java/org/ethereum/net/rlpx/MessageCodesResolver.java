@@ -17,6 +17,7 @@
  */
 package org.ethereum.net.rlpx;
 
+import org.ethereum.net.apa.message.ApaMessageCodes;
 import org.ethereum.net.client.Capability;
 import org.ethereum.net.eth.EthVersion;
 import org.ethereum.net.eth.message.EthMessageCodes;
@@ -67,6 +68,11 @@ public class MessageCodesResolver {
                 offset += BzzMessageCodes.values().length + 4;
                 // FIXME: for some reason Go left 4 codes between BZZ and ETH message codes
             }
+
+            if (capability.getName().equals(Capability.APA)) {
+                setApaOffset(offset);
+                offset += ApaMessageCodes.values().length;
+            }
         }
     }
 
@@ -84,6 +90,10 @@ public class MessageCodesResolver {
 
     public byte withShhOffset(byte code) {
         return withOffset(code, Capability.SHH);
+    }
+
+    public byte withApaOffset(byte code) {
+        return withOffset(code, Capability.APA);
     }
 
     public byte withOffset(byte code, String cap) {
@@ -107,6 +117,10 @@ public class MessageCodesResolver {
         return resolve(code, Capability.SHH);
     }
 
+    public byte resolveApa(byte code) {
+        return resolve(code, Capability.APA);
+    }
+
     private byte resolve(byte code, String cap) {
         byte offset = getOffset(cap);
         return (byte)(code - offset);
@@ -127,6 +141,10 @@ public class MessageCodesResolver {
 
     public void setShhOffset(int offset) {
         setOffset(Capability.SHH, offset);
+    }
+
+    public void setApaOffset(int offset) {
+        setOffset(Capability.APA, offset);
     }
 
     private void setOffset(String cap, int offset) {

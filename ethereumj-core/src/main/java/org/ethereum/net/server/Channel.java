@@ -27,6 +27,9 @@ import org.ethereum.core.BlockHeaderWrapper;
 import org.ethereum.core.Transaction;
 import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.net.MessageQueue;
+import org.ethereum.net.apa.handler.Apa;
+import org.ethereum.net.apa.handler.ApaHandler;
+import org.ethereum.net.apa.message.ApaMessageFactory;
 import org.ethereum.net.client.Capability;
 import org.ethereum.net.eth.handler.Eth;
 import org.ethereum.net.eth.handler.EthAdapter;
@@ -86,6 +89,9 @@ public class Channel {
 
     @Autowired
     private BzzHandler bzzHandler;
+
+    @Autowired
+    private ApaHandler apaHandler;
 
     @Autowired
     private MessageCodec messageCodec;
@@ -157,6 +163,9 @@ public class Channel {
 
         bzzHandler.setMsgQueue(msgQueue);
         messageCodec.setBzzMessageFactory(new BzzMessageFactory());
+
+        apaHandler.setMsgQueue(msgQueue);
+        messageCodec.setApaMessageFactory(new ApaMessageFactory());
     }
 
     public void publicRLPxHandshakeFinished(ChannelHandlerContext ctx, FrameCodec frameCodec,
@@ -232,6 +241,11 @@ public class Channel {
     public void activateBzz(ChannelHandlerContext ctx) {
         ctx.pipeline().addLast(Capability.BZZ, bzzHandler);
         bzzHandler.activate();
+    }
+
+    public void activateApa(ChannelHandlerContext ctx) {
+        ctx.pipeline().addLast(Capability.APA, apaHandler);
+        apaHandler.activate();
     }
 
     public void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
@@ -338,6 +352,10 @@ public class Channel {
 
     public Eth getEthHandler() {
         return eth;
+    }
+
+    public Apa getApaHandler(){
+        return apaHandler;
     }
 
     public boolean hasEthStatusSucceeded() {

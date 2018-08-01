@@ -24,6 +24,7 @@ import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.listener.EthereumListener;
+import org.ethereum.net.apa.message.ApaMessageCodes;
 import org.ethereum.net.client.Capability;
 import org.ethereum.net.eth.EthVersion;
 import org.ethereum.net.eth.message.EthMessageCodes;
@@ -69,6 +70,8 @@ public class MessageCodec extends MessageToMessageCodec<Frame, Message> {
     private MessageFactory ethMessageFactory;
     private MessageFactory shhMessageFactory;
     private MessageFactory bzzMessageFactory;
+    private MessageFactory apaMessageFactory;
+
     private EthVersion ethVersion;
 
     @Autowired
@@ -239,11 +242,15 @@ public class MessageCodec extends MessageToMessageCodec<Frame, Message> {
         }
 
         if (msgCommand instanceof ShhMessageCodes){
-            code = messageCodesResolver.withShhOffset(((ShhMessageCodes)msgCommand).asByte());
+            code = messageCodesResolver.withShhOffset(((ShhMessageCodes) msgCommand).asByte());
         }
 
         if (msgCommand instanceof BzzMessageCodes){
             code = messageCodesResolver.withBzzOffset(((BzzMessageCodes) msgCommand).asByte());
+        }
+
+        if (msgCommand instanceof ApaMessageCodes){
+            code = messageCodesResolver.withApaOffset(((ApaMessageCodes) msgCommand).asByte());
         }
 
         return code;
@@ -269,6 +276,11 @@ public class MessageCodec extends MessageToMessageCodec<Frame, Message> {
         resolved = messageCodesResolver.resolveBzz(code);
         if (bzzMessageFactory != null && BzzMessageCodes.inRange(resolved)) {
             return bzzMessageFactory.create(resolved, payload);
+        }
+
+        resolved = messageCodesResolver.resolveApa(code);
+        if (apaMessageFactory != null && ApaMessageCodes.inRange(resolved)) {
+            return apaMessageFactory.create(resolved, payload);
         }
 
         throw new IllegalArgumentException("No such message: " + code + " [" + toHexString(payload) + "]");
@@ -304,5 +316,9 @@ public class MessageCodec extends MessageToMessageCodec<Frame, Message> {
 
     public void setBzzMessageFactory(MessageFactory bzzMessageFactory) {
         this.bzzMessageFactory = bzzMessageFactory;
+    }
+
+    public void setApaMessageFactory(MessageFactory apaMessageFactory) {
+        this.apaMessageFactory = apaMessageFactory;
     }
 }

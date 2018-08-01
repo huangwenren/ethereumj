@@ -23,6 +23,7 @@ import org.ethereum.core.Transaction;
 import org.ethereum.listener.EthereumListener;
 import org.ethereum.manager.WorldManager;
 import org.ethereum.net.MessageQueue;
+import org.ethereum.net.apa.handler.ApaHandler;
 import org.ethereum.net.client.Capability;
 import org.ethereum.net.client.ConfigCapabilities;
 import org.ethereum.net.eth.message.NewBlockMessage;
@@ -241,6 +242,12 @@ public class P2pHandler extends SimpleChannelInboundHandler<P2pMessage> {
 
                 // Activate ShhHandler for this peer
                 channel.activateBzz(ctx);
+            } else if
+                (capability.getName().equals(Capability.APA) &&
+                capability.getVersion() == ApaHandler.VERSION) {
+
+                // Activate ApaHandler for this peer
+                channel.activateApa(ctx);
             }
         }
 

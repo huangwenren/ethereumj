@@ -26,6 +26,7 @@ public class Capability implements Comparable<Capability> {
     public final static String ETH = "eth";
     public final static String SHH = "shh";
     public final static String BZZ = "bzz";
+    public final static String APA = "apa";
 
     private String name;
     private byte version;

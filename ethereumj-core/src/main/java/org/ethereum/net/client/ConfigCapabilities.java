@@ -18,6 +18,7 @@
 package org.ethereum.net.client;
 
 import org.ethereum.config.SystemProperties;
+import org.ethereum.net.apa.handler.ApaHandler;
 import org.ethereum.net.eth.EthVersion;
 import org.ethereum.net.shh.ShhHandler;
 import org.ethereum.net.swarm.bzz.BzzHandler;
@@ -55,6 +56,7 @@ public class ConfigCapabilities {
 
         AllCaps.add(new Capability(SHH, ShhHandler.VERSION));
         AllCaps.add(new Capability(BZZ, BzzHandler.VERSION));
+        AllCaps.add(new Capability(APA, ApaHandler.VERSION));
     }
 
     /**

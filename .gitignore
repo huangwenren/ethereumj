@@ -45,3 +45,7 @@ sampleDB*
 
 # jenv
 .java-version
+
+# test data
+testDB-1
+testDB-2

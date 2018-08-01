@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+
 /**
  * @author: HuShili
  * @date: 2018/7/31
@@ -59,7 +61,9 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
                 break;
             case REQUEST:
                 ethereumListener.trace("[Recv: " + msg + "]");
-                sendResponse("hello");
+                HashMap rpl = new HashMap();
+                rpl.put("payload","hello");
+                sendResponse(new ResponseMessage(rpl));
                 break;
             case RESPONSE:
                 ethereumListener.trace("[Recv: " + msg + "]");
@@ -92,14 +96,12 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
     }
 
     @Override
-    public void sendRequest(String string){
-        RequestMessage msg = new RequestMessage();
+    public void sendRequest(RequestMessage msg){
         sendMessage(msg);
     }
 
     @Override
-    public void sendResponse(String string){
-        ResponseMessage msg = new ResponseMessage();
+    public void sendResponse(ResponseMessage msg){
         sendMessage(msg);
     }
 

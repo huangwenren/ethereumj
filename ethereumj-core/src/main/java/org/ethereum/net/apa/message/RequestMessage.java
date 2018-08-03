@@ -17,14 +17,14 @@ import static org.ethereum.net.apa.message.ApaMessageCodes.REQUEST;
  * @description: none
  */
 public class RequestMessage extends ApaMessage {
-    private HashMap messages = new HashMap<>();
+    private Map messages = new HashMap<>();
 
     public RequestMessage(byte[] encoded) {
         super(encoded);
         parse();
     }
 
-    public RequestMessage(HashMap msg) {
+    public RequestMessage(Map msg) {
         messages = msg;
         parsed = true;
     }
@@ -70,7 +70,7 @@ public class RequestMessage extends ApaMessage {
         return encoded;
     }
 
-    public HashMap getMessages() {
+    public Map getMessages() {
         return messages;
     }
 

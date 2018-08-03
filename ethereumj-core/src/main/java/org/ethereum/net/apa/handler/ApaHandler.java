@@ -5,13 +5,17 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.ethereum.listener.EthereumListener;
 import org.ethereum.net.MessageQueue;
 import org.ethereum.net.apa.message.*;
+import org.ethereum.net.server.ChannelManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.tongji.Message;
+import org.tongji.MessageType;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author: HuShili
@@ -38,6 +42,8 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
     @Autowired
     private EthereumListener ethereumListener;
 
+    private ChannelManager channelManager;
+
     public ApaHandler() {
     }
 
@@ -55,15 +61,17 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
 
         ethereumListener.trace(String.format("ApaHandler invoke: [%s]", msg.getCommand()));
 
+        MessageType messageType = null;
+        Map payload = null;
         switch (msg.getCommand()) {
             case STATUS:
                 ethereumListener.trace("[Recv: " + msg + "]");
+                messageType = MessageType.STATUS;
                 break;
             case REQUEST:
                 ethereumListener.trace("[Recv: " + msg + "]");
-                HashMap rpl = new HashMap();
-                rpl.put("payload","hello");
-                sendResponse(new ResponseMessage(rpl));
+                messageType = MessageType.REQUEST;
+                payload = ((RequestMessage)msg).getMessages();
                 break;
             case RESPONSE:
                 ethereumListener.trace("[Recv: " + msg + "]");
@@ -72,6 +80,8 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
                 logger.error("Unknown Apa message type: " + msg.getCommand());
                 break;
         }
+
+        channelManager.cacheApaMessage(new Message(payload, messageType));
     }
 
     @Override
@@ -87,7 +97,9 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
         logger.debug("handlerRemoved: ... ");
     }
 
-    public void activate() {
+    public void activate(ChannelManager channelManager) {
+        this.channelManager = channelManager;
+
         logger.info("Apa protocol activated");
         ethereumListener.trace("Apa protocol activated");
         sendStatus();

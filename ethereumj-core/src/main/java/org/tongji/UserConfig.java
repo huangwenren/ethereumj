@@ -18,8 +18,8 @@ public class UserConfig extends Config{
         super(config);
 
         // And here deals protocols
-        if(config.containsKey("protocols"))
-            protocols = (ArrayList<String>) config.get("protocols");
+        if(config.containsKey("peer.capabilities"))
+            protocols = (ArrayList<String>) config.get("peer.capabilities");
         else {
             protocols = new ArrayList<>();
             protocols.add("eth");
@@ -31,15 +31,15 @@ public class UserConfig extends Config{
     public void setConfig(Map<String, Object> config) {
         super.setConfig(config);
 
-        if(config.containsKey("protocols"))
-            protocols = (ArrayList<String>) config.get("protocols");
+        if(config.containsKey("peer.capabilities"))
+            protocols = (ArrayList<String>) config.get("peer.capabilities");
     }
 
     @Override
     public Map getConfig() {
 
         Map config = super.getConfig();
-        config.put("protocols", protocols);
+        config.put("peer.capabilities", protocols);
 
         return config;
     }

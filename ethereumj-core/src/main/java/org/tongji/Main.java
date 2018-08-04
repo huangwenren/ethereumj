@@ -23,7 +23,7 @@ public class Main {
 
         // Other with default
         Map params = new HashMap();
-        params.put("protocols", protocols);
+        params.put("peer.capabilities", protocols);
 
         UserConfig config = new UserConfig(params);
 

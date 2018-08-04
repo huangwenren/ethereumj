@@ -29,6 +29,7 @@ import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.net.MessageQueue;
 import org.ethereum.net.apa.handler.Apa;
 import org.ethereum.net.apa.handler.ApaHandler;
+import org.ethereum.net.apa.message.ApaMessage;
 import org.ethereum.net.apa.message.ApaMessageFactory;
 import org.ethereum.net.client.Capability;
 import org.ethereum.net.eth.handler.Eth;
@@ -245,7 +246,7 @@ public class Channel {
 
     public void activateApa(ChannelHandlerContext ctx) {
         ctx.pipeline().addLast(Capability.APA, apaHandler);
-        apaHandler.activate();
+        apaHandler.activate(channelManager);
     }
 
     public void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
@@ -428,6 +429,10 @@ public class Channel {
 
     public EthVersion getEthVersion() {
         return eth.getVersion();
+    }
+
+    public void sendApaMessage(ApaMessage message){
+        apaHandler.sendMessage(message);
     }
 
     public void dropConnection() {

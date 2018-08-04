@@ -26,6 +26,7 @@ import org.ethereum.core.PendingState;
 import org.ethereum.core.Transaction;
 import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.facade.Ethereum;
+import org.ethereum.net.apa.message.ApaMessage;
 import org.ethereum.net.message.ReasonCode;
 import org.ethereum.net.rlpx.Node;
 import org.ethereum.sync.SyncManager;
@@ -34,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.tongji.Message;
 
 import java.net.InetAddress;
 import java.util.*;
@@ -95,6 +97,8 @@ public class ChannelManager {
     private SyncManager syncManager;
 
     private PeerServer peerServer;
+
+    private Stack<Message> messages;
 
     @Autowired
     private ChannelManager(final SystemProperties config, final SyncManager syncManager,
@@ -341,6 +345,25 @@ public class ChannelManager {
             } else {                    // 70%
                 channel.sendNewBlockHashes(block);
             }
+        }
+    }
+
+    // APA service
+    public void setApaStack(Stack<Message> messages){
+        this.messages = messages;
+    }
+
+    public Stack<Message> getApaStack(){
+        return messages;
+    }
+
+    public void cacheApaMessage(Message message){
+        messages.push(message);
+    }
+
+    public void sendApaMessage(ApaMessage message){
+        for (Channel channel : activePeers.values()) {
+            channel.sendApaMessage(message);
         }
     }
 

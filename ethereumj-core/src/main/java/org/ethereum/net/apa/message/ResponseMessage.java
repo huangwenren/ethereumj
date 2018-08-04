@@ -20,14 +20,14 @@ import static org.ethereum.net.apa.message.ApaMessageCodes.RESPONSE;
  */
 public class ResponseMessage extends ApaMessage {
 
-    private HashMap messages = new HashMap<>();
+    private Map messages = new HashMap<>();
 
     public ResponseMessage(byte[] encoded) {
         super(encoded);
         parse();
     }
 
-    public ResponseMessage(HashMap msg) {
+    public ResponseMessage(Map msg) {
         messages = msg;
         parsed = true;
     }
@@ -73,7 +73,7 @@ public class ResponseMessage extends ApaMessage {
         return encoded;
     }
 
-    public HashMap getMessages() {
+    public Map getMessages() {
         return messages;
     }
 

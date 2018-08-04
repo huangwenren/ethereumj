@@ -20,7 +20,7 @@ public class Config {
 
     private static int NETWORK_ID = 3;
 
-    private static List ACTIVE_PEERS;
+    private static String ACTIVE_PEERS;
 
     private static boolean SYNC_ENABLED = true;
 
@@ -33,9 +33,9 @@ public class Config {
     private static int FLUSH_MEMORY = 0;
 
     private Config(){
-        ACTIVE_PEERS = new ArrayList();
-        ACTIVE_PEERS.add("url = enode://6ce05930c72abc632c58e2e4324f7c7ea478cec0ed4fa2528982cf34483094e9cbc9216e7aa349691242576d552a2a56aaeae426c5303ded677ce455ba1acd9d@13.84.180.240:30303");
-        ACTIVE_PEERS.add("url = enode://20c9ad97c081d63397d7b685a412227a40e23c8bdc6688c6f37e97cfbc22d2b4d1db1510d8f61e6a8866ad7f0e17c02b14182d37ea7c3c8b9c2683aeb6b733a1@52.169.14.227:30303");
+        ACTIVE_PEERS = "[{url = 'enode://6ce05930c72abc632c58e2e4324f7c7ea478cec0ed4fa2528982cf34483094e9cbc9216e7aa349691242576d552a2a56aaeae426c5303ded677ce455ba1acd9d@13.84.180.240:30303'}," +
+                "{url = 'enode://20c9ad97c081d63397d7b685a412227a40e23c8bdc6688c6f37e97cfbc22d2b4d1db1510d8f61e6a8866ad7f0e17c02b14182d37ea7c3c8b9c2683aeb6b733a1@52.169.14.227:30303'}" +
+                "]";
     }
 
     public Config(Map<String, Object> config) {
@@ -84,7 +84,7 @@ public class Config {
                     NETWORK_ID = (int)entry.getValue();
                     break;
                 case "peer.active":
-                    ACTIVE_PEERS = (List)entry.getValue();
+                    ACTIVE_PEERS = (String)entry.getValue();
                     break;
                 case "sync.enabled":
                     SYNC_ENABLED = (boolean)entry.getValue();
@@ -105,5 +105,25 @@ public class Config {
                     System.out.println("User config name: " + entry.getKey());
             }
         }
+    }
+
+    @Override
+    public String toString(){
+
+        String str = "";
+        str += "node.name = " + NAME + " \n";
+        str += "peer.listen.port = " + PORT + " \n";
+        str += "peer.discovery.enabled = " + DISCOVERY_ENABLED + " \n";
+        str += "peer.networkId = " + NETWORK_ID + " \n";
+        str += "peer.active = " + ACTIVE_PEERS + " \n";
+        str += "sync.enabled = " + SYNC_ENABLED + " \n";
+        str += "genesis = " + GENESIS + " \n";
+        str += "blockchain.config.name = " + BLOCKCHAIN_NAME + " \n";
+        str += "database.dir = " + DATABASE_DIR + " \n";
+        str += "cache.flush.memory = " + FLUSH_MEMORY ;
+
+        System.out.println(str);
+
+        return str;
     }
 }

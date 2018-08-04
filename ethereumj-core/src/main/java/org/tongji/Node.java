@@ -1,5 +1,6 @@
 package org.tongji;
 
+import com.typesafe.config.ConfigFactory;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
@@ -37,7 +38,7 @@ public class Node {
 
         SystemProperties props= new SystemProperties();
 
-        props.overrideParams(config.getConfig());
+        props.overrideParams(ConfigFactory.parseString(((UserConfig)config).toString().replaceAll("'", "\"")));
 
         // Get eth
         ethereum = EthereumFactory.createEthereum(props, props.getClass());

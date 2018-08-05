@@ -14,30 +14,25 @@ import java.util.Map;
  */
 public class Config {
 
-    private String name = "Test Node";
+    private String name = "Apa Node";
 
     private int port = 30303;
 
     private boolean discovery_enabled = true;
 
-    private int networkId = 3;
+    private int networkId = 1;
 
     private String active_peers;
 
     private boolean sync_enabled = true;
 
-    private String genesis = "ropsten.json";
+    private String genesis = "sample-genesis.json";
 
-    private String blockchain_name = "ropsten";
-
-    private String database_dir = "testnetSampleDb";
+    private String database_dir = "testDb";
 
     private int flush_memory = 0;
 
-    private Config(){
-        active_peers = "[{url = 'enode://6ce05930c72abc632c58e2e4324f7c7ea478cec0ed4fa2528982cf34483094e9cbc9216e7aa349691242576d552a2a56aaeae426c5303ded677ce455ba1acd9d@13.84.180.240:30303'}," +
-                "{url = 'enode://20c9ad97c081d63397d7b685a412227a40e23c8bdc6688c6f37e97cfbc22d2b4d1db1510d8f61e6a8866ad7f0e17c02b14182d37ea7c3c8b9c2683aeb6b733a1@52.169.14.227:30303'}" +
-                "]";
+    public Config(){
     }
 
     public Config(Map<String, Object> config) {
@@ -59,7 +54,6 @@ public class Config {
         config.put("peer.active", active_peers);
         config.put("sync.enabled", sync_enabled);
         config.put("genesis", genesis);
-        config.put("blockchain.config.name", blockchain_name);
         config.put("database.dir", database_dir);
         config.put("cache.flush.memory", flush_memory);
 
@@ -94,9 +88,6 @@ public class Config {
                 case "genesis":
                     genesis = (String)entry.getValue();
                     break;
-                case "blockchain.config.name":
-                    blockchain_name = (String)entry.getValue();
-                    break;
                 case "database.dir":
                     database_dir = (String)entry.getValue();
                     break;
@@ -104,7 +95,7 @@ public class Config {
                     flush_memory = (int)entry.getValue();
                     break;
                 default:
-                    System.out.println("User config name: " + entry.getKey());
+                    System.out.println("======= User config name: " + entry.getKey());
             }
         }
     }
@@ -117,20 +108,16 @@ public class Config {
         str += "peer.listen.port = " + port + " \n";
         str += "peer.discovery.enabled = " + discovery_enabled + " \n";
         str += "peer.networkId = " + networkId + " \n";
-        str += "peer.active = " + active_peers + " \n";
+        if (active_peers != null)
+            str += "peer.active = " + active_peers + " \n";
         str += "sync.enabled = " + sync_enabled + " \n";
         str += "genesis = " + genesis + " \n";
-        str += "blockchain.config.name = " + blockchain_name + " \n";
         str += "database.dir = " + database_dir + " \n";
         str += "cache.flush.memory = " + flush_memory + " \n";
+
+        str += "peer.discovery.ip.list = [] \n";
 
         return str;
     }
 
-    @Bean
-    public SystemProperties systemProperties() {
-        SystemProperties props = new SystemProperties();
-        props.overrideParams(ConfigFactory.parseString(this.toString().replaceAll("'", "\"")));
-        return props;
-    }
 }

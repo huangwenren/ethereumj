@@ -25,7 +25,6 @@ public class UserConfig extends Config {
         else {
             protocols = new ArrayList<>();
             protocols.add("eth");
-            protocols.add("shh");
         }
         if(config.containsKey("peer.privateKey"))
             privateKey = (String) config.get("peer.privateKey");

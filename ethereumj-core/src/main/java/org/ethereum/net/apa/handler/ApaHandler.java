@@ -82,7 +82,9 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
         }
 
         try {
-            channelManager.cacheApaMessage(new Message(payload, messageType));
+            if (messageType != MessageType.STATUS) {
+                channelManager.cacheApaMessage(new Message(payload, messageType));
+            }
         }catch (NullPointerException e){
             System.out.println("Channel Manager not assigned.");
         }

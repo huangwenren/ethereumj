@@ -1,22 +1,32 @@
 package org.tongji;
 
-import com.typesafe.config.ConfigFactory;
-import org.ethereum.config.SystemProperties;
+import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 import org.ethereum.net.apa.message.RequestMessage;
 import org.ethereum.net.apa.message.StatusMessage;
 import org.ethereum.net.server.ChannelManager;
+import org.ethereum.samples.BasicSample;
+import org.springframework.context.annotation.Bean;
 
 import java.util.ArrayList;
 import java.util.Stack;
+
+import static org.ethereum.crypto.HashUtil.sha3;
 
 /**
  * @author: HuShili
  * @date: 2018/8/2
  * @description: none
  */
-public class Node {
+public class Node extends BasicSample{
+
+    /**
+     * Use that sender key to sign transactions
+     */
+    protected final byte[] senderPrivateKey = sha3("cow".getBytes());
+    // sender address is derived from the private key
+    protected final byte[] senderAddress = ECKey.fromPrivate(senderPrivateKey).getAddress();
 
     private Config config;
 
@@ -25,6 +35,10 @@ public class Node {
     private ChannelManager channelManager;
 
     private Stack<Message> messages = new Stack<>();
+
+    public Node(){
+        super();
+    }
 
     public Node(Config config){
         this.config = config;
@@ -36,12 +50,8 @@ public class Node {
      */
     public void start(){
 
-        SystemProperties props= new SystemProperties();
-
-        props.overrideParams(ConfigFactory.parseString(((UserConfig)config).toString().replaceAll("'", "\"")));
-
         // Get eth
-        ethereum = EthereumFactory.createEthereum(props, props.getClass());
+        ethereum = EthereumFactory.createEthereum(this.getClass());
 
         // Get CM
         channelManager = ethereum.getChannelManager();
@@ -89,4 +99,13 @@ public class Node {
         return messages;
     }
 
+    @Override
+    public void onSyncDone() throws Exception {
+        super.onSyncDone();
+    }
+
+    @Bean
+    public Node Node() {
+        return new Node();
+    }
 }

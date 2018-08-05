@@ -1,8 +1,10 @@
 package org.tongji;
 
-import java.util.ArrayList;
+import com.typesafe.config.ConfigFactory;
+import org.ethereum.config.SystemProperties;
+import org.springframework.context.annotation.Bean;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -122,8 +124,13 @@ public class Config {
         str += "database.dir = " + DATABASE_DIR + " \n";
         str += "cache.flush.memory = " + FLUSH_MEMORY ;
 
-        System.out.println(str);
-
         return str;
+    }
+
+    @Bean
+    public SystemProperties systemProperties() {
+        SystemProperties props = new SystemProperties();
+        props.overrideParams(ConfigFactory.parseString(this.toString().replaceAll("'", "\"")));
+        return props;
     }
 }

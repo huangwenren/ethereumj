@@ -8,7 +8,7 @@ import java.util.Map;
  * @date: 2018/8/2
  * @description: none
  */
-public class UserConfig extends Config{
+public class UserConfig extends Config {
 
     private ArrayList<String> protocols;
 
@@ -42,5 +42,23 @@ public class UserConfig extends Config{
         config.put("peer.capabilities", protocols);
 
         return config;
+    }
+
+    @Override
+    public String toString() {
+        String str = super.toString();
+
+        str += "\npeer.capabilities = [";
+        for (String protocol : protocols) {
+            str += protocol;
+            if(protocols.indexOf(protocol) != protocols.size() - 1){
+                str += ", ";
+            }
+            else{
+                str += "]\n";
+            }
+        }
+
+        return str;
     }
 }

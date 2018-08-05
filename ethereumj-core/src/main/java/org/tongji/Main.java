@@ -26,7 +26,6 @@ public class Main {
         params.put("peer.capabilities", protocols);
 
         UserConfig config = new UserConfig(params);
-
         // Start a node
         Node node = new Node(config);
         node.start();

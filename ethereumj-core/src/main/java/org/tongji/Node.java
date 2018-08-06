@@ -3,6 +3,7 @@ package org.tongji;
 import com.typesafe.config.ConfigFactory;
 import org.ethereum.config.NoAutoscan;
 import org.ethereum.config.SystemProperties;
+
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 import org.ethereum.facade.P2P;
@@ -18,6 +19,8 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
 import java.util.Stack;
+
+import static org.ethereum.crypto.HashUtil.sha3;
 
 /**
  * @author: HuShili
@@ -113,7 +116,7 @@ public class Node{
 
         return messages;
     }
-
+  
     @Bean
     public SystemProperties systemProperties() {
         return props;

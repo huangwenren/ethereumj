@@ -4,7 +4,6 @@ import com.typesafe.config.ConfigFactory;
 import org.ethereum.config.SystemProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -123,5 +122,4 @@ public class Config {
 
         return str;
     }
-
 }

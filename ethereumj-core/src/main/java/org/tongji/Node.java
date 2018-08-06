@@ -6,6 +6,7 @@ import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 import org.ethereum.net.apa.message.RequestMessage;
+import org.ethereum.net.apa.message.ResponseMessage;
 import org.ethereum.net.apa.message.StatusMessage;
 import org.ethereum.net.server.ChannelManager;
 import org.springframework.context.annotation.Bean;
@@ -80,6 +81,9 @@ public class Node{
                 break;
             case REQUEST:
                 channelManager.sendApaMessage(new RequestMessage(message.getPayload()));
+                break;
+            case RESPONSE:
+                channelManager.sendApaMessage(new ResponseMessage(message.getPayload()));
                 break;
             default:
                 System.out.println("Unknown type:" + message.getType());

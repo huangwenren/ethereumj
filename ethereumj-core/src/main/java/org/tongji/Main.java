@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.tongji.MessageType.REQUEST;
+import static org.tongji.MessageType.RESPONSE;
 import static org.tongji.MessageType.STATUS;
 
 /**
@@ -61,7 +62,22 @@ public class Main {
         ArrayList<Message> messages = node2.receiveMessage();
 
         for (Message message : messages) {
-            System.out.println(message.getType());
+            System.out.println(message.getType() + " " + message.getPayload().get("text"));
+        }
+
+        // Broadcast a message
+        payload = new HashMap();
+        payload.put("text", "hello");
+        msg = new Message(payload, RESPONSE);
+
+        node2.broadcastMessage(msg);
+
+        Thread.sleep(10000);
+        // Receive the cached messages
+        messages = node1.receiveMessage();
+
+        for (Message message : messages) {
+            System.out.println(message.getType() + " " + message.getPayload().get("text"));
         }
 
         // Stop the node

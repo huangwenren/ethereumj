@@ -75,6 +75,8 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
                 break;
             case RESPONSE:
                 ethereumListener.trace("[Recv: " + msg + "]");
+                messageType = MessageType.RESPONSE;
+                payload = ((ResponseMessage)msg).getMessages();
                 break;
             default:
                 logger.error("Unknown Apa message type: " + msg.getCommand());

@@ -9,7 +9,9 @@ public enum MessageType {
 
     STATUS(0x00),
 
-    REQUEST(0x01);
+    REQUEST(0x01),
+
+    RESPONSE(0x02);
 
     private int cmd;
     private MessageType(int cmd) {

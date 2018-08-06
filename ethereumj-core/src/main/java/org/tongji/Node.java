@@ -1,13 +1,21 @@
 package org.tongji;
 
-import org.ethereum.crypto.ECKey;
+import com.typesafe.config.ConfigFactory;
+import org.ethereum.config.NoAutoscan;
+import org.ethereum.config.SystemProperties;
+
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
+import org.ethereum.facade.P2P;
+import org.ethereum.facade.P2PFactory;
 import org.ethereum.net.apa.message.RequestMessage;
+import org.ethereum.net.apa.message.ResponseMessage;
 import org.ethereum.net.apa.message.StatusMessage;
 import org.ethereum.net.server.ChannelManager;
-import org.ethereum.samples.BasicSample;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
 import java.util.Stack;
@@ -19,25 +27,26 @@ import static org.ethereum.crypto.HashUtil.sha3;
  * @date: 2018/8/2
  * @description: none
  */
-public class Node extends BasicSample{
+@Configuration
+@NoAutoscan
+public class Node{
 
-    /**
-     * Use that sender key to sign transactions
-     */
-    protected final byte[] senderPrivateKey = sha3("cow".getBytes());
-    // sender address is derived from the private key
-    protected final byte[] senderAddress = ECKey.fromPrivate(senderPrivateKey).getAddress();
+    private static final Logger logger = LoggerFactory.getLogger("apa");
 
     private Config config;
 
+    public static SystemProperties props = new SystemProperties();
+
     private Ethereum ethereum;
+
+    private P2P p2P;
 
     private ChannelManager channelManager;
 
     private Stack<Message> messages = new Stack<>();
 
     public Node(){
-        super();
+        this.config = new Config();
     }
 
     public Node(Config config){
@@ -50,11 +59,17 @@ public class Node extends BasicSample{
      */
     public void start(){
 
+        props = new SystemProperties();
+
+        props.overrideParams(ConfigFactory.parseString(config.toString()));
+
         // Get eth
-        ethereum = EthereumFactory.createEthereum(this.getClass());
+        //ethereum = EthereumFactory.createEthereum(props, this.getClass());
+        p2P = P2PFactory.createP2P(props, this.getClass());
 
         // Get CM
-        channelManager = ethereum.getChannelManager();
+        //channelManager = ethereum.getChannelManager();
+        channelManager = p2P.getChannelManager();
 
         // Set the cache
         channelManager.setApaStack(messages);
@@ -80,8 +95,11 @@ public class Node extends BasicSample{
             case REQUEST:
                 channelManager.sendApaMessage(new RequestMessage(message.getPayload()));
                 break;
+            case RESPONSE:
+                channelManager.sendApaMessage(new ResponseMessage(message.getPayload()));
+                break;
             default:
-                System.out.println("Unknown type:" + message.getType());
+                logger.error("Unknown type:" + message.getType());
         }
     }
 
@@ -98,14 +116,9 @@ public class Node extends BasicSample{
 
         return messages;
     }
-
-    @Override
-    public void onSyncDone() throws Exception {
-        super.onSyncDone();
-    }
-
+  
     @Bean
-    public Node Node() {
-        return new Node();
+    public SystemProperties systemProperties() {
+        return props;
     }
 }

@@ -1,8 +1,12 @@
 package org.tongji;
 
-import java.util.ArrayList;
+import com.typesafe.config.ConfigFactory;
+import org.ethereum.config.SystemProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,30 +16,27 @@ import java.util.Map;
  */
 public class Config {
 
-    private static String NAME = "Test Node";
+    private static final Logger logger = LoggerFactory.getLogger("apa");
 
-    private static int PORT = 30303;
+    private String name = "Apa Node";
 
-    private static boolean DISCOVERY_ENABLED = true;
+    private int port = 30303;
 
-    private static int NETWORK_ID = 3;
+    private boolean discovery_enabled = true;
 
-    private static String ACTIVE_PEERS;
+    private int networkId = 1;
 
-    private static boolean SYNC_ENABLED = true;
+    private String active_peers;
 
-    private static String GENESIS = "ropsten.json";
+    private boolean sync_enabled = true;
 
-    private static String BLOCKCHAIN_NAME = "ropsten";
+    private String genesis = "sample-genesis.json";
 
-    private static String DATABASE_DIR = "testnetSampleDb";
+    private String database_dir = "testDb";
 
-    private static int FLUSH_MEMORY = 0;
+    private int flush_memory = 0;
 
-    private Config(){
-        ACTIVE_PEERS = "[{url = 'enode://6ce05930c72abc632c58e2e4324f7c7ea478cec0ed4fa2528982cf34483094e9cbc9216e7aa349691242576d552a2a56aaeae426c5303ded677ce455ba1acd9d@13.84.180.240:30303'}," +
-                "{url = 'enode://20c9ad97c081d63397d7b685a412227a40e23c8bdc6688c6f37e97cfbc22d2b4d1db1510d8f61e6a8866ad7f0e17c02b14182d37ea7c3c8b9c2683aeb6b733a1@52.169.14.227:30303'}" +
-                "]";
+    public Config(){
     }
 
     public Config(Map<String, Object> config) {
@@ -50,16 +51,15 @@ public class Config {
     public Map getConfig() {
         Map<String, Object> config = new HashMap<>();
 
-        config.put("node.name", NAME);
-        config.put("peer.listen.port", PORT);
-        config.put("peer.discovery.enabled", DISCOVERY_ENABLED);
-        config.put("peer.networkId", NETWORK_ID);
-        config.put("peer.active", ACTIVE_PEERS);
-        config.put("sync.enabled", SYNC_ENABLED);
-        config.put("genesis", GENESIS);
-        config.put("blockchain.config.name", BLOCKCHAIN_NAME);
-        config.put("database.dir", DATABASE_DIR);
-        config.put("cache.flush.memory", FLUSH_MEMORY);
+        config.put("node.name", name);
+        config.put("peer.listen.port", port);
+        config.put("peer.discovery.enabled", discovery_enabled);
+        config.put("peer.networkId", networkId);
+        config.put("peer.active", active_peers);
+        config.put("sync.enabled", sync_enabled);
+        config.put("genesis", genesis);
+        config.put("database.dir", database_dir);
+        config.put("cache.flush.memory", flush_memory);
 
         return config;
     }
@@ -72,37 +72,34 @@ public class Config {
         for (Map.Entry<String, Object> entry : config.entrySet()) {
             switch (entry.getKey()){
                 case "node.name":
-                    NAME = (String)entry.getValue();
+                    name = (String)entry.getValue();
                     break;
                 case "peer.listen.port":
-                    PORT = (int)entry.getValue();
+                    port = (int)entry.getValue();
                     break;
                 case "peer.discovery.enabled":
-                    DISCOVERY_ENABLED = (boolean)entry.getValue();
+                    discovery_enabled = (boolean)entry.getValue();
                     break;
                 case "peer.networkId":
-                    NETWORK_ID = (int)entry.getValue();
+                    networkId = (int)entry.getValue();
                     break;
                 case "peer.active":
-                    ACTIVE_PEERS = (String)entry.getValue();
+                    active_peers = (String)entry.getValue();
                     break;
                 case "sync.enabled":
-                    SYNC_ENABLED = (boolean)entry.getValue();
+                    sync_enabled = (boolean)entry.getValue();
                     break;
                 case "genesis":
-                    GENESIS = (String)entry.getValue();
-                    break;
-                case "blockchain.config.name":
-                    BLOCKCHAIN_NAME = (String)entry.getValue();
+                    genesis = (String)entry.getValue();
                     break;
                 case "database.dir":
-                    DATABASE_DIR = (String)entry.getValue();
+                    database_dir = (String)entry.getValue();
                     break;
                 case "cache.flush.memory":
-                    FLUSH_MEMORY = (int)entry.getValue();
+                    flush_memory = (int)entry.getValue();
                     break;
                 default:
-                    System.out.println("User config name: " + entry.getKey());
+                    logger.info("User config name: " + entry.getKey());
             }
         }
     }
@@ -111,19 +108,20 @@ public class Config {
     public String toString(){
 
         String str = "";
-        str += "node.name = " + NAME + " \n";
-        str += "peer.listen.port = " + PORT + " \n";
-        str += "peer.discovery.enabled = " + DISCOVERY_ENABLED + " \n";
-        str += "peer.networkId = " + NETWORK_ID + " \n";
-        str += "peer.active = " + ACTIVE_PEERS + " \n";
-        str += "sync.enabled = " + SYNC_ENABLED + " \n";
-        str += "genesis = " + GENESIS + " \n";
-        str += "blockchain.config.name = " + BLOCKCHAIN_NAME + " \n";
-        str += "database.dir = " + DATABASE_DIR + " \n";
-        str += "cache.flush.memory = " + FLUSH_MEMORY ;
+        str += "node.name = " + name + " \n";
+        str += "peer.listen.port = " + port + " \n";
+        str += "peer.discovery.enabled = " + discovery_enabled + " \n";
+        str += "peer.networkId = " + networkId + " \n";
+        if (active_peers != null)
+            str += "peer.active = " + active_peers + " \n";
+        str += "sync.enabled = " + sync_enabled + " \n";
+        str += "genesis = " + genesis + " \n";
+        str += "database.dir = " + database_dir + " \n";
+        str += "cache.flush.memory = " + flush_memory + " \n";
 
-        System.out.println(str);
+        str += "peer.discovery.ip.list = [] \n";
 
         return str;
     }
+
 }

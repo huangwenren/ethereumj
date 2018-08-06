@@ -1,12 +1,20 @@
 package org.tongji;
 
 import com.typesafe.config.ConfigFactory;
+import org.ethereum.config.NoAutoscan;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
+import org.ethereum.facade.P2P;
+import org.ethereum.facade.P2PFactory;
 import org.ethereum.net.apa.message.RequestMessage;
+import org.ethereum.net.apa.message.ResponseMessage;
 import org.ethereum.net.apa.message.StatusMessage;
 import org.ethereum.net.server.ChannelManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
 import java.util.Stack;
@@ -16,15 +24,27 @@ import java.util.Stack;
  * @date: 2018/8/2
  * @description: none
  */
-public class Node {
+@Configuration
+@NoAutoscan
+public class Node{
+
+    private static final Logger logger = LoggerFactory.getLogger("apa");
 
     private Config config;
 
+    public static SystemProperties props = new SystemProperties();
+
     private Ethereum ethereum;
+
+    private P2P p2P;
 
     private ChannelManager channelManager;
 
     private Stack<Message> messages = new Stack<>();
+
+    public Node(){
+        this.config = new Config();
+    }
 
     public Node(Config config){
         this.config = config;
@@ -36,15 +56,17 @@ public class Node {
      */
     public void start(){
 
-        SystemProperties props= new SystemProperties();
+        props = new SystemProperties();
 
-        props.overrideParams(ConfigFactory.parseString(((UserConfig)config).toString().replaceAll("'", "\"")));
+        props.overrideParams(ConfigFactory.parseString(config.toString()));
 
         // Get eth
-        ethereum = EthereumFactory.createEthereum(props, props.getClass());
+        //ethereum = EthereumFactory.createEthereum(props, this.getClass());
+        p2P = P2PFactory.createP2P(props, this.getClass());
 
         // Get CM
-        channelManager = ethereum.getChannelManager();
+        //channelManager = ethereum.getChannelManager();
+        channelManager = p2P.getChannelManager();
 
         // Set the cache
         channelManager.setApaStack(messages);
@@ -70,8 +92,11 @@ public class Node {
             case REQUEST:
                 channelManager.sendApaMessage(new RequestMessage(message.getPayload()));
                 break;
+            case RESPONSE:
+                channelManager.sendApaMessage(new ResponseMessage(message.getPayload()));
+                break;
             default:
-                System.out.println("Unknown type:" + message.getType());
+                logger.error("Unknown type:" + message.getType());
         }
     }
 
@@ -89,4 +114,8 @@ public class Node {
         return messages;
     }
 
+    @Bean
+    public SystemProperties systemProperties() {
+        return props;
+    }
 }

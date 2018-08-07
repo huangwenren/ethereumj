@@ -40,7 +40,8 @@ public class Main {
         params3.put("peer.capabilities", protocols);
         params3.put("peer.listen.port", 30336);
         params3.put("peer.privateKey", "f67c4032a7ff79bbfa7a780331b235c4eb681d51a0704cb1562064fb6c4bced4");
-        params3.put("peer.active", "[{ url = \"enode://3973cb86d7bef9c96e5d589601d788370f9e24670dcba0480c0b3b1b0647d13d0f0fffed115dd2d4b5ca1929287839dcd4e77bdc724302b44ae48622a8766ee6@localhost:30334\" }]");
+        params3.put("peer.active", "[{ url = \"enode://3973cb86d7bef9c96e5d589601d788370f9e24670dcba0480c0b3b1b0647d13d0f0fffed115dd2d4b5ca1929287839dcd4e77bdc724302b44ae48622a8766ee6@localhost:30334\" }, " +
+                "{ url = \"enode://26ba1aadaf59d7607ad7f437146927d79e80312f026cfa635c6b2ccf2c5d3521f5812ca2beb3b295b14f97110e6448c1c7ff68f14c5328d43a3c62b44143e9b1@localhost:30335\" }]");
         params3.put("database.dir", "testDB-3");
 
         UserConfig config1 = new UserConfig(params1);
@@ -67,7 +68,7 @@ public class Main {
 
         node1.broadcastMessage(msg);
 
-        Thread.sleep(10000);
+        Thread.sleep(5000);
         // Receive the cached messages
         ArrayList<Message> messages = node2.receiveMessage();
 
@@ -82,12 +83,12 @@ public class Main {
 
         node2.broadcastMessage(msg);
 
-        Thread.sleep(10000);
+        Thread.sleep(5000);
         // Receive the cached messages
-        messages = node1.receiveMessage();
+        messages = node3.receiveMessage();
 
         for (Message message : messages) {
-            System.out.println(message.getType() + " " + message.getPayload().get("text"));
+            System.out.println("=====" + message.getType() + " " + message.getPayload().get("text") + "=====");
         }
 
         // Stop the node

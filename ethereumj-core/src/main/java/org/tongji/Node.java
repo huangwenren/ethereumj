@@ -5,7 +5,6 @@ import org.ethereum.config.NoAutoscan;
 import org.ethereum.config.SystemProperties;
 
 import org.ethereum.facade.Ethereum;
-import org.ethereum.facade.EthereumFactory;
 import org.ethereum.facade.P2P;
 import org.ethereum.facade.P2PFactory;
 import org.ethereum.net.apa.message.RequestMessage;
@@ -18,9 +17,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
-import java.util.Stack;
-
-import static org.ethereum.crypto.HashUtil.sha3;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * @author: HuShili
@@ -43,7 +41,7 @@ public class Node{
 
     private ChannelManager channelManager;
 
-    private Stack<Message> messages = new Stack<>();
+    private Queue<Message> messages = new LinkedList<>();
 
     public Node(){
         this.config = new Config();
@@ -110,8 +108,8 @@ public class Node{
     public ArrayList<Message> receiveMessage(){
         ArrayList<Message> messages = new ArrayList<>();
 
-        while(!this.messages.empty()){
-            messages.add(this.messages.pop());
+        while(!this.messages.isEmpty()){
+            messages.add(this.messages.poll());
         }
 
         return messages;

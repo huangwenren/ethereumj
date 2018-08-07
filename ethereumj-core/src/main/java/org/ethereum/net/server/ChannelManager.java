@@ -98,7 +98,7 @@ public class ChannelManager {
 
     private PeerServer peerServer;
 
-    private Stack<Message> messages;
+    private Queue<Message> messages;
 
     @Autowired
     private ChannelManager(final SystemProperties config, final SyncManager syncManager,
@@ -349,16 +349,16 @@ public class ChannelManager {
     }
 
     // APA service
-    public void setApaStack(Stack<Message> messages){
+    public void setApaStack(Queue<Message> messages){
         this.messages = messages;
     }
 
-    public Stack<Message> getApaStack(){
+    public Queue<Message> getApaStack(){
         return messages;
     }
 
     public void cacheApaMessage(Message message){
-        messages.push(message);
+        messages.offer(message);
     }
 
     public void sendApaMessage(ApaMessage message){

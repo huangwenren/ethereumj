@@ -6,14 +6,13 @@ import java.util.Map;
 
 import static org.tongji.MessageType.REQUEST;
 import static org.tongji.MessageType.RESPONSE;
-import static org.tongji.MessageType.STATUS;
 
 /**
  * @author: HuShili
- * @date: 2018/8/3
- * @description: Demo with 3 nodes
+ * @date: 2018/8/11
+ * @description: Test with 4 nodes
  */
-public class Main {
+public class Test {
 
     public static void main(String[] args) throws InterruptedException {
 
@@ -44,9 +43,19 @@ public class Main {
                 "{ url = \"enode://26ba1aadaf59d7607ad7f437146927d79e80312f026cfa635c6b2ccf2c5d3521f5812ca2beb3b295b14f97110e6448c1c7ff68f14c5328d43a3c62b44143e9b1@localhost:30335\" }]");
         params3.put("database.dir", "testDB-3");
 
+        Map params4 = new HashMap();
+        params4.put("peer.capabilities", protocols);
+        params4.put("peer.listen.port", 30337);
+        params4.put("peer.privateKey", "ba43d10d069f0c41a8914849c1abeeac2a681b21ae9b60a6a2362c06e6eb1bc8");
+        params4.put("peer.active", "[{ url = \"enode://3973cb86d7bef9c96e5d589601d788370f9e24670dcba0480c0b3b1b0647d13d0f0fffed115dd2d4b5ca1929287839dcd4e77bdc724302b44ae48622a8766ee6@localhost:30334\" }, " +
+                "{ url = \"enode://26ba1aadaf59d7607ad7f437146927d79e80312f026cfa635c6b2ccf2c5d3521f5812ca2beb3b295b14f97110e6448c1c7ff68f14c5328d43a3c62b44143e9b1@localhost:30335\" }, " +
+                "{ url = \"enode://dead745c1dbcde518b48e52aca1e8d5ba666005a2c8804e39826c6080fb11c1e8abe41d1e41896e871f204f790a90fa9781744cccecf492212192a7c56e7673b@localhost:30336\" }]");
+        params4.put("database.dir", "testDB-4");
+
         UserConfig config1 = new UserConfig(params1);
         UserConfig config2 = new UserConfig(params2);
         UserConfig config3 = new UserConfig(params3);
+        UserConfig config4 = new UserConfig(params4);
 
         // Start a node
         Node node1 = new Node(config1);
@@ -58,6 +67,9 @@ public class Main {
         Node node3 = new Node(config3);
         node3.start();
 
+        Node node4 = new Node(config4);
+        node4.start();
+
         System.out.println("======= Waiting for connecting...");
         Thread.sleep(20000);
         System.out.println("======= Sending test message...");
@@ -68,7 +80,7 @@ public class Main {
 
         node1.broadcastMessage(msg1);
 
-        Thread.sleep(30000);
+        Thread.sleep(10000);
 
         // Broadcast a message
         Map payload2 = new HashMap();
@@ -97,6 +109,12 @@ public class Main {
 
         for (Message message : messages) {
             System.out.println("=====Node3=====" + message.getType() + " " + message.getPayload().get("text") + "=====");
+        }
+
+        messages = node4.receiveMessage();
+
+        for (Message message : messages) {
+            System.out.println("=====Node4=====" + message.getType() + " " + message.getPayload().get("text") + "=====");
         }
 
         // Stop the node

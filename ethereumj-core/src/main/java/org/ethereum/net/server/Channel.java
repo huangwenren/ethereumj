@@ -247,6 +247,7 @@ public class Channel {
     public void activateApa(ChannelHandlerContext ctx) {
         ctx.pipeline().addLast(Capability.APA, apaHandler);
         apaHandler.activate(channelManager);
+        apaHandler.setChannel(this);
     }
 
     public void setInetSocketAddress(InetSocketAddress inetSocketAddress) {

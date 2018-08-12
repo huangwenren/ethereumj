@@ -1,6 +1,7 @@
 package org.tongji;
 
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author: HuShili
@@ -19,6 +20,7 @@ public class Message {
     public Message(Map payload, MessageType type){
         this.payload = payload;
         this.type = type;
+        this.payload.put("uuid", UUID.randomUUID());
     }
 
     public MessageType getType() {
@@ -35,6 +37,10 @@ public class Message {
 
     public void setPayload(Map payload) {
         this.payload = payload;
+    }
+
+    public String getUUID() {
+        return (String)this.payload.get("uuid");
     }
 
     public void addSingle(String key, Object value){

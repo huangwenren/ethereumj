@@ -4,21 +4,22 @@ import com.typesafe.config.ConfigFactory;
 import org.ethereum.config.NoAutoscan;
 import org.ethereum.config.SystemProperties;
 
+import org.ethereum.core.Apa;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.P2P;
 import org.ethereum.facade.P2PFactory;
+import org.ethereum.listener.EthereumListenerAdapter;
 import org.ethereum.net.apa.message.RequestMessage;
 import org.ethereum.net.apa.message.ResponseMessage;
 import org.ethereum.net.apa.message.StatusMessage;
+import org.ethereum.net.server.Channel;
 import org.ethereum.net.server.ChannelManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * @author: HuShili
@@ -41,7 +42,7 @@ public class Node{
 
     private ChannelManager channelManager;
 
-    private Queue<Message> messages = new LinkedList<>();
+    //private Queue<Message> messages = new LinkedList<>();
 
     public Node(){
         this.config = new Config();
@@ -68,9 +69,6 @@ public class Node{
         // Get CM
         //channelManager = ethereum.getChannelManager();
         channelManager = p2P.getChannelManager();
-
-        // Set the cache
-        channelManager.setApaStack(messages);
     }
 
     public void stop(){
@@ -88,13 +86,13 @@ public class Node{
 
         switch (message.getType()){
             case STATUS:
-                channelManager.sendApaMessage(new StatusMessage(new byte[]{}));
+                //channelManager.sendApaMessage(new StatusMessage(new byte[]{}));
                 break;
             case REQUEST:
-                channelManager.sendApaMessage(new RequestMessage(message.getPayload()));
+                channelManager.sendApaMessage(new RequestMessage(message.getPayload()), (UUID)message.getPayload().get("uuid"));
                 break;
             case RESPONSE:
-                channelManager.sendApaMessage(new ResponseMessage(message.getPayload()));
+                channelManager.sendApaMessage(new ResponseMessage(message.getPayload()), (UUID)message.getPayload().get("uuid"));
                 break;
             default:
                 logger.error("Unknown type:" + message.getType());
@@ -106,10 +104,24 @@ public class Node{
      * @return messages
      */
     public ArrayList<Message> receiveMessage(){
+
         ArrayList<Message> messages = new ArrayList<>();
 
-        while(!this.messages.isEmpty()){
-            messages.add(this.messages.poll());
+        List<Apa> apas = channelManager.getApaSyncManager().getApaStore().getAllApa();
+
+        for (Apa apa : apas) {
+            switch (apa.getMessage().getCommand()){
+                case STATUS:
+                    break;
+                case REQUEST:
+                    messages.add(new Message(((RequestMessage)apa.getMessage()).getMessages(), MessageType.REQUEST));
+                    break;
+                case RESPONSE:
+                    messages.add(new Message(((ResponseMessage)apa.getMessage()).getMessages(), MessageType.RESPONSE));
+                    break;
+                default:
+                    logger.error("Unknown message type: " + apa.getMessage().getCommand());
+            }
         }
 
         return messages;

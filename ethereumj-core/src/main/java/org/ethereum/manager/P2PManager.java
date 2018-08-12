@@ -10,6 +10,7 @@ import org.ethereum.net.client.PeerClient;
 import org.ethereum.net.rlpx.discover.NodeManager;
 import org.ethereum.net.rlpx.discover.UDPListener;
 import org.ethereum.net.server.ChannelManager;
+import org.ethereum.sync.ApaSyncManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,9 @@ public class P2PManager {
 
     @Autowired
     private ChannelManager channelManager;
+
+    @Autowired
+    private ApaSyncManager apaSyncManager;
 
     @Autowired
     private NodeManager nodeManager;
@@ -60,10 +64,12 @@ public class P2PManager {
                         final EthereumListener listener) {
         this.listener = listener;
         this.config = config;
+
     }
 
     @PostConstruct
     private void init() {
+        this.apaSyncManager.init(channelManager);
     }
 
     public void addListener(EthereumListener listener) {
@@ -81,6 +87,10 @@ public class P2PManager {
 
     public ChannelManager getChannelManager() {
         return channelManager;
+    }
+
+    public ApaSyncManager getApaSyncManager() {
+        return apaSyncManager;
     }
 
     public EthereumListener getListener() {

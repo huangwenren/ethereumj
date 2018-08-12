@@ -20,15 +20,13 @@ package org.ethereum.net.server;
 import org.apache.commons.collections4.map.LRUMap;
 import org.ethereum.config.NodeFilter;
 import org.ethereum.config.SystemProperties;
-import org.ethereum.core.Block;
-import org.ethereum.core.BlockWrapper;
-import org.ethereum.core.PendingState;
-import org.ethereum.core.Transaction;
+import org.ethereum.core.*;
 import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.net.apa.message.ApaMessage;
 import org.ethereum.net.message.ReasonCode;
 import org.ethereum.net.rlpx.Node;
+import org.ethereum.sync.ApaSyncManager;
 import org.ethereum.sync.SyncManager;
 import org.ethereum.sync.SyncPool;
 import org.slf4j.Logger;
@@ -74,12 +72,18 @@ public class ChannelManager {
     private BlockingQueue<BlockWrapper> newForeignBlocks = new LinkedBlockingQueue<>();
 
     /**
+     * Queue with new apa from other peers
+     */
+    private BlockingQueue<Apa> newForeignApa = new LinkedBlockingDeque<>();
+
+    /**
      * Queue with new peers used for after channel init tasks
      */
     private BlockingQueue<Channel> newActivePeers = new LinkedBlockingQueue<>();
 
     private Thread blockDistributeThread;
     private Thread txDistributeThread;
+    private Thread apaDistributeThread;
 
     Random rnd = new Random();  // Used for distributing new blocks / hashes logic
 
@@ -94,17 +98,20 @@ public class ChannelManager {
 
     private SystemProperties config;
 
+    @Autowired
     private SyncManager syncManager;
+
+    @Autowired
+    private ApaSyncManager apaSyncManager;
 
     private PeerServer peerServer;
 
-    private Queue<Message> messages;
-
     @Autowired
-    private ChannelManager(final SystemProperties config, final SyncManager syncManager,
+    private ChannelManager(final SystemProperties config, final SyncManager syncManager, final ApaSyncManager apaSyncManager,
                            final PeerServer peerServer) {
         this.config = config;
         this.syncManager = syncManager;
+        this.apaSyncManager = apaSyncManager;
         this.peerServer = peerServer;
         maxActivePeers = config.maxActivePeers();
         trustedPeers = config.peerTrusted();
@@ -128,6 +135,10 @@ public class ChannelManager {
         // Resending pending txs to newly connected peers
         this.txDistributeThread = new Thread(this::newTxDistributeLoop, "NewPeersThread");
         this.txDistributeThread.start();
+
+        // Resending new apa to network in loop
+        this.apaDistributeThread = new Thread(this::newApaDistributeLoop, "NewSyncThreadApa");
+        this. apaDistributeThread.start();
     }
 
     public void connect(Node node) {
@@ -284,6 +295,14 @@ public class ChannelManager {
     }
 
     /**
+     * Called on new apa msgs received from other peers
+     * @param apa  Apa msg with hash
+     */
+    public void onNewForeignApa(Apa apa){
+        newForeignApa.add(apa);
+    }
+
+    /**
      * Processing new blocks received from other peers from queue
      */
     private void newBlocksDistributeLoop() {
@@ -331,6 +350,38 @@ public class ChannelManager {
     }
 
     /**
+     * Sends all new apa to peers
+     */
+    private void newApaDistributeLoop(){
+        while (!Thread.currentThread().isInterrupted()) {
+            Apa apa = null;
+            try {
+                // Random break
+                Thread.sleep((int)(Math.random()*2000));
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
+
+            try {
+                apa = newForeignApa.take();
+                if(apaSyncManager.validateAndAddNewApa(apa)) {
+                    Channel receivedFrom = getActivePeer(apa.getNodeId());
+                    sendNewApa(apa.getMessage(), receivedFrom);
+                }
+            } catch (InterruptedException e) {
+                break;
+            } catch (Throwable e) {
+                if (apa != null) {
+                    logger.error("Error broadcasting new apa {}: ", e);
+                    logger.error("Apa dump: {}", apa.getMessage());
+                } else {
+                    logger.error("Error broadcasting unknown apa", e);
+                }
+            }
+        }
+    }
+
+    /**
      * Propagates the new block message across active peers with exclusion of
      * 'receivedFrom' peer.
      * Distributes full block to 30% of peers and only its hash to remains
@@ -349,19 +400,16 @@ public class ChannelManager {
     }
 
     // APA service
-    public void setApaStack(Queue<Message> messages){
-        this.messages = messages;
+    private void sendNewApa(ApaMessage message, Channel receivedFrom) {
+        for (Channel channel : activePeers.values()) {
+            if (channel == receivedFrom) continue;
+
+            channel.sendApaMessage(message);
+        }
     }
 
-    public Queue<Message> getApaStack(){
-        return messages;
-    }
-
-    public void cacheApaMessage(Message message){
-        messages.offer(message);
-    }
-
-    public void sendApaMessage(ApaMessage message){
+    public void sendApaMessage(ApaMessage message, UUID uuid){
+        apaSyncManager.validateAndAddNewApa(new Apa(message, false, uuid, null));
         for (Channel channel : activePeers.values()) {
             channel.sendApaMessage(message);
         }
@@ -408,11 +456,16 @@ public class ChannelManager {
         return syncManager;
     }
 
+    public ApaSyncManager getApaSyncManager() {
+        return apaSyncManager;
+    }
+
     public void close() {
         try {
             logger.info("Shutting down block and tx distribute threads...");
             if (blockDistributeThread != null) blockDistributeThread.interrupt();
             if (txDistributeThread != null) txDistributeThread.interrupt();
+            if (apaDistributeThread != null) apaDistributeThread.interrupt();
 
             logger.info("Shutting down ChannelManager worker thread...");
             mainWorker.shutdownNow();

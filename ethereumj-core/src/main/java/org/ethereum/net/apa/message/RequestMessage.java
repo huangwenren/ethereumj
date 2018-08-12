@@ -75,8 +75,8 @@ public class RequestMessage extends ApaMessage {
     }
 
     @Override
-    public Class<ResponseMessage> getAnswerMessage() {
-        return ResponseMessage.class;
+    public Class<?> getAnswerMessage() {
+        return null;
     }
 
     @Override

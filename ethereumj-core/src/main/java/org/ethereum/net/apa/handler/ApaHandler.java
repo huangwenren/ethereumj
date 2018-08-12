@@ -5,6 +5,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.ethereum.listener.EthereumListener;
 import org.ethereum.net.MessageQueue;
 import org.ethereum.net.apa.message.*;
+import org.ethereum.net.server.Channel;
 import org.ethereum.net.server.ChannelManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +15,8 @@ import org.springframework.stereotype.Component;
 import org.tongji.Message;
 import org.tongji.MessageType;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author: HuShili
@@ -38,6 +39,7 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
 
     private MessageQueue msgQueue = null;
     private boolean active = false;
+    private Channel channel;
 
     @Autowired
     private EthereumListener ethereumListener;
@@ -52,7 +54,7 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
     }
 
     @Override
-    public void channelRead0(final ChannelHandlerContext ctx, ApaMessage msg) throws InterruptedException {
+    public void channelRead0(final ChannelHandlerContext ctx, ApaMessage msg) throws InterruptedException{
 
         if (!isActive()) return;
 
@@ -61,34 +63,21 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
 
         ethereumListener.trace(String.format("ApaHandler invoke: [%s]", msg.getCommand()));
 
-        MessageType messageType = null;
-        Map payload = null;
         switch (msg.getCommand()) {
             case STATUS:
                 ethereumListener.trace("[Recv: " + msg + "]");
-                messageType = MessageType.STATUS;
                 break;
             case REQUEST:
                 ethereumListener.trace("[Recv: " + msg + "]");
-                messageType = MessageType.REQUEST;
-                payload = ((RequestMessage)msg).getMessages();
+                processRequest((RequestMessage)msg);
                 break;
             case RESPONSE:
                 ethereumListener.trace("[Recv: " + msg + "]");
-                messageType = MessageType.RESPONSE;
-                payload = ((ResponseMessage)msg).getMessages();
+                processResponse((ResponseMessage)msg);
                 break;
             default:
                 logger.error("Unknown Apa message type: " + msg.getCommand());
                 break;
-        }
-
-        try {
-            if (messageType != MessageType.STATUS) {
-                channelManager.cacheApaMessage(new Message(payload, messageType));
-            }
-        }catch (NullPointerException e){
-            System.out.println("Channel Manager not assigned.");
         }
     }
 
@@ -141,5 +130,19 @@ public class ApaHandler extends SimpleChannelInboundHandler<ApaMessage> implemen
 
     public void setMsgQueue(MessageQueue msgQueue) {
         this.msgQueue = msgQueue;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
+    protected void processRequest(RequestMessage msg){
+        org.ethereum.core.Apa apa = new org.ethereum.core.Apa(msg, false, (UUID)msg.getMessages().get("uuid"), channel.getNodeId());
+        channelManager.onNewForeignApa(apa);
+    }
+
+    protected void processResponse(ResponseMessage msg){
+        org.ethereum.core.Apa apa = new org.ethereum.core.Apa(msg, false, (UUID)msg.getMessages().get("uuid"), channel.getNodeId());
+        channelManager.onNewForeignApa(apa);
     }
 }
